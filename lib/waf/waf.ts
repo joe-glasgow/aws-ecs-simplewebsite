@@ -8,30 +8,9 @@ const WebAppWaf = (stack: Construct) => new wafv2.CfnWebACL(stack, 'waf', {
     visibilityConfig: {
         sampledRequestsEnabled: true,
         cloudWatchMetricsEnabled: true,
-        metricName: 'tnc-firewall'
+        metricName: 'webapp-firewall'
     },
     rules: [
-        {
-            name: 'AWS-AWSManagedRulesCommonRuleSet',
-            priority: 1,
-            statement: {
-                managedRuleGroupStatement: {
-                    vendorName: 'AWS',
-                    name: 'AWSManagedRulesCommonRuleSet',
-                    excludedRules : [
-                        {
-                            name: "NoUserAgent_HEADER"
-                        }
-                    ]
-                }
-            },
-            overrideAction: { none: {}},
-            visibilityConfig: {
-                sampledRequestsEnabled: true,
-                cloudWatchMetricsEnabled: true,
-                metricName: 'AWS-AWSManagedRulesCommonRuleSet'
-            }
-        },
         {
             name: 'LimitRequests1000',
             priority: 2,
