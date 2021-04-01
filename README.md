@@ -12,7 +12,9 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 `cd simple`
 
-`docker build . `
+`docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .`
+
+`docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG`
 
 `docker image ls`
 
