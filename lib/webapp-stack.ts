@@ -2,11 +2,13 @@ import * as cdk from '@aws-cdk/core';
 import * as ec2 from "@aws-cdk/aws-ec2";
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
+import * as wafv2 from '@aws-cdk/aws-wafv2';
 import {ApplicationLoadBalancedServiceRecordType} from "@aws-cdk/aws-ecs-patterns";
 import {PublicHostedZone} from "@aws-cdk/aws-route53";
 import * as path from "path";
 import {DnsValidatedCertificate} from "@aws-cdk/aws-certificatemanager";
 import {ApplicationProtocol} from "@aws-cdk/aws-elasticloadbalancingv2";
+import WebAppWaf from "./waf/waf";
 
 export class WebappStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -51,5 +53,15 @@ export class WebappStack extends cdk.Stack {
     })
 
     lb.loadBalancer.addRedirect()
+
+    const appWaf = WebAppWaf(this);
+
+    // WAF to WebApp
+    const wafAssoc = new wafv2.CfnWebACLAssociation(this, 'WebApp-waf-assoc', {
+      resourceArn: lb.loadBalancer.loadBalancerArn,
+      webAclArn: appWaf.attrArn
+    });
+
+    wafAssoc.node.addDependency(lb.loadBalancer);
   }
 }
