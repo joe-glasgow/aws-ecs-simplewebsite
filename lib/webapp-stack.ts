@@ -13,7 +13,7 @@ import WebAppWaf from "./waf/waf";
 export class WebappStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
+    // provide domain name in cdk.json or via CLI e.g. -c domain=<sub.mydomain.com | mydomain.com>
     const domainName = this.node.tryGetContext('domain') || process.env.DOMAIN_NAME
 
     const domainZone = PublicHostedZone.fromLookup(this, 'PublicHostedZone', {
@@ -51,7 +51,7 @@ export class WebappStack extends cdk.Stack {
       recordType: ApplicationLoadBalancedServiceRecordType.ALIAS,
       publicLoadBalancer: true // Default is false
     })
-
+    // Redirects HTTP to HTTPS as default if no configuration provided - ideal!
     lb.loadBalancer.addRedirect()
 
     const appWaf = WebAppWaf(this);
@@ -61,7 +61,7 @@ export class WebappStack extends cdk.Stack {
       resourceArn: lb.loadBalancer.loadBalancerArn,
       webAclArn: appWaf.attrArn
     });
-
+   // attach the waf to load balancer
     wafAssoc.node.addDependency(lb.loadBalancer);
   }
 }
