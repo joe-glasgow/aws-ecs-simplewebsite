@@ -10,6 +10,14 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## ECS Registry, Cluster, Tasks, Service and Docker
 
+`cd simple`
+
+`docker build . `
+
+`docker image ls`
+
+`docker run -d -p 3000:3000 <docker-image-id>`
+
 ## Testing the application
 
 ## CI Integration
@@ -19,6 +27,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 ## Other considerations (Security, WAF, Cloudfront)
 
 ## Useful commands
+
 
  * `npm run build`   compile typescript to js
  * `npm run watch`   watch for changes and compile
