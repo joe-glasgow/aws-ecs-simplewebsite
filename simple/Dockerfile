@@ -6,4 +6,4 @@ WORKDIR $WEB_ROOT
 COPY --chown=node:node . .
 EXPOSE 80
 USER node
-CMD sh -cl 'npm install --verbose && node app.js'
+CMD sh -cl 'npm install --verbose && npm run build && node app.js'
