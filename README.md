@@ -20,6 +20,8 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 `docker run -d -p 3000:3000 <docker-image-id>`
 
+## WAF
+
 ## Testing the application
 
 ## CI Integration

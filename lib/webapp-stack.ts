@@ -2,16 +2,18 @@ import * as cdk from '@aws-cdk/core';
 import * as ec2 from "@aws-cdk/aws-ec2";
 import * as ecs from "@aws-cdk/aws-ecs";
 import * as ecs_patterns from "@aws-cdk/aws-ecs-patterns";
+import * as wafv2 from '@aws-cdk/aws-wafv2';
 import {ApplicationLoadBalancedServiceRecordType} from "@aws-cdk/aws-ecs-patterns";
 import {PublicHostedZone} from "@aws-cdk/aws-route53";
 import * as path from "path";
 import {DnsValidatedCertificate} from "@aws-cdk/aws-certificatemanager";
 import {ApplicationProtocol} from "@aws-cdk/aws-elasticloadbalancingv2";
+import WebAppWaf from "./waf/waf";
 
 export class WebappStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
+    // provide domain name in cdk.json or via CLI e.g. -c domain=<sub.mydomain.com | mydomain.com>
     const domainName = this.node.tryGetContext('domain') || process.env.DOMAIN_NAME
 
     const domainZone = PublicHostedZone.fromLookup(this, 'PublicHostedZone', {
@@ -49,7 +51,17 @@ export class WebappStack extends cdk.Stack {
       recordType: ApplicationLoadBalancedServiceRecordType.ALIAS,
       publicLoadBalancer: true // Default is false
     })
-
+    // Redirects HTTP to HTTPS as default if no configuration provided - ideal!
     lb.loadBalancer.addRedirect()
+
+    const appWaf = WebAppWaf(this);
+
+    // WAF to WebApp
+    const wafAssoc = new wafv2.CfnWebACLAssociation(this, 'WebApp-waf-assoc', {
+      resourceArn: lb.loadBalancer.loadBalancerArn,
+      webAclArn: appWaf.attrArn
+    });
+   // attach the waf to load balancer
+    wafAssoc.node.addDependency(lb.loadBalancer);
   }
 }
