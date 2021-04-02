@@ -37,7 +37,7 @@ export class WebappStack extends cdk.Stack {
     // Create a load-balanced Fargate service and make it public
     const lb = new ecs_patterns.ApplicationLoadBalancedFargateService(this, "WebappFargateService", {
       cluster, // Required
-      cpu: 512, // Default is 256
+      cpu: 1024, // Default is 256
       desiredCount: 1, // Default is 1
       taskImageOptions: {
         containerPort: 3000,
