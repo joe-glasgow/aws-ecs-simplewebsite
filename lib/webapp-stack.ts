@@ -9,7 +9,6 @@ import * as path from "path";
 import {DnsValidatedCertificate} from "@aws-cdk/aws-certificatemanager";
 import {ApplicationProtocol} from "@aws-cdk/aws-elasticloadbalancingv2";
 import WebAppWaf from "./waf/waf";
-import {Ec2Service} from "@aws-cdk/aws-ecs";
 
 export class WebappStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
