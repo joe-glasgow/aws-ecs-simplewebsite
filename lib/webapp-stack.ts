@@ -21,8 +21,14 @@ export class WebappStack extends cdk.Stack {
       privateZone: false,
     })
 
+    const natGatewayProvider = ec2.NatProvider.instance({
+      instanceType: new ec2.InstanceType('t2.micro'),
+    });
+
     const vpc = new ec2.Vpc(this, "WebappVpc", {
-      maxAzs: 3 // Default is all AZs in region
+      maxAzs: 2, // Default is all AZs in region
+      natGateways: 2,
+      natGatewayProvider
     });
 
     const cluster = new ecs.Cluster(this, "WebappCluster", {
