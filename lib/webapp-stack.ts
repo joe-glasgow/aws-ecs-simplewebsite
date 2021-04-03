@@ -9,6 +9,7 @@ import * as path from "path";
 import {DnsValidatedCertificate} from "@aws-cdk/aws-certificatemanager";
 import {ApplicationProtocol} from "@aws-cdk/aws-elasticloadbalancingv2";
 import WebAppWaf from "./waf/waf";
+import {Ec2Service} from "@aws-cdk/aws-ecs";
 
 export class WebappStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -21,8 +22,14 @@ export class WebappStack extends cdk.Stack {
       privateZone: false,
     })
 
+    const natGatewayProvider = ec2.NatProvider.instance({
+      instanceType: new ec2.InstanceType('t2.micro'),
+    });
+
     const vpc = new ec2.Vpc(this, "WebappVpc", {
-      maxAzs: 3 // Default is all AZs in region
+      maxAzs: 2, // Default is all AZs in region
+      natGateways: 2,
+      natGatewayProvider
     });
 
     const cluster = new ecs.Cluster(this, "WebappCluster", {
@@ -37,7 +44,7 @@ export class WebappStack extends cdk.Stack {
     // Create a load-balanced Fargate service and make it public
     const lb = new ecs_patterns.ApplicationLoadBalancedFargateService(this, "WebappFargateService", {
       cluster, // Required
-      cpu: 1024, // Default is 256
+      cpu: 512, // Default is 256
       desiredCount: 1, // Default is 1
       taskImageOptions: {
         containerPort: 3000,
