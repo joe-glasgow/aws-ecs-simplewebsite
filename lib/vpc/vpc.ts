@@ -10,4 +10,5 @@ const vpc = (stack: Construct) => new Vpc(stack, "WebappVpc", {
     ]
 });
 
+
 export default vpc;
