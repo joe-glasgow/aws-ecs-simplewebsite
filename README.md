@@ -30,6 +30,8 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 ## Other considerations (Security, WAF, Cloudfront)
 
+`aws ssm get-parameters --name graphQLURL --query="Parameters[0].Value"`
+
 ## Useful commands
 
 
