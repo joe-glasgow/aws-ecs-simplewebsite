@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
-import { WebappStack } from '../lib/webapp-stack';
+import { WebappStack } from '../lib/webAppStack/webappStack';
 import { GraphQLStack } from '../lib/graphQLAppSync/graphQLAppSyncStack'
 
 const app = new cdk.App();

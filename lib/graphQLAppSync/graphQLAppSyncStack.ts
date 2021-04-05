@@ -2,9 +2,11 @@ import * as cdk from '@aws-cdk/core';
 import * as rds from '@aws-cdk/aws-rds'
 import {join} from 'path'
 import * as appsync from '@aws-cdk/aws-appsync';
-import {CfnApiKey, MappingTemplate} from '@aws-cdk/aws-appsync';
+import {CfnApiKey} from '@aws-cdk/aws-appsync';
 import * as SSM from "@aws-cdk/aws-ssm";
 import auroraVPC from "./vpc/vpc";
+import httpDataSource from "./httpDataSource/dataSource";
+import rdsDataSource from "./rdsDataSource/rdsDataSource";
 
 export class GraphQLStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
@@ -14,6 +16,7 @@ export class GraphQLStack extends cdk.Stack {
             name: 'demo',
             schema: appsync.Schema.fromAsset(join(__dirname, 'schema.gql')),
             xrayEnabled: true,
+            // TODO: SHOULD ENABLE THIS IN A PRODUCTION CONTEXT
             // authorizationConfig: {
             //     additionalAuthorizationModes: [{
             //         authorizationType: AuthorizationType.IAM,
@@ -26,30 +29,8 @@ export class GraphQLStack extends cdk.Stack {
         });
 
         const region = this.node.tryGetContext('region')
-
-        const httpDs = api.addHttpDataSource(
-            'ds',
-            `https://states.${region}.amazonaws.com/`,
-            {
-                name: 'httpDsWithStepF',
-                description: 'from appsync to SytepFunctions Workflow',
-                authorizationConfig: {
-                    signingRegion: region,
-                    signingServiceName: 'states'
-                }
-            }
-        );
-
-        httpDs.createResolver({
-            typeName: 'Mutation',
-            fieldName: 'callStepFunction',
-            requestMappingTemplate: MappingTemplate.fromFile(join(__dirname,'request.vtl' )),
-            responseMappingTemplate: MappingTemplate.fromFile(join(__dirname,'response.vtl'))
-        });
-        // Create username and password secret for DB Cluster
-        const secret = new rds.DatabaseSecret(this, 'AuroraSecret', {
-            username: 'clusteradmin',
-        });
+        // Add RDS Data Source
+        httpDataSource(api, region)
 
         const vpc = auroraVPC(this);
 
@@ -62,60 +43,23 @@ export class GraphQLStack extends cdk.Stack {
             defaultDatabaseName: 'demos',
         });
         // Build a data source for AppSync to access the database.
-        const rdsDS = api.addRdsDataSource('rds', cluster, secret, 'demos');
-        // Set up a resolver for an RDS query.
-        rdsDS.createResolver({
-            typeName: 'Query',
-            fieldName: 'getDemosRds',
-            requestMappingTemplate: MappingTemplate.fromString(`
-              {
-                "version": "2018-05-29",
-                "statements": [
-                  "SELECT * FROM demos"
-                ]
-              }
-            `),
-            responseMappingTemplate: MappingTemplate.fromString(`
-                $util.rds.toJsonObject($ctx.result)
-            `),
-        });
-        // Set up a resolver for an RDS mutation.
-        rdsDS.createResolver({
-            typeName: 'Mutation',
-            fieldName: 'addDemoRds',
-            requestMappingTemplate: MappingTemplate.fromString(`
-              {
-                "version": "2018-05-29",
-                "statements": [
-                  "INSERT INTO demos VALUES (:id, :version)",
-                  "SELECT * WHERE id = :id"
-                ],
-                "variableMap": {
-                  ":id": $util.toJson($util.autoId()),
-                  ":version": $util.toJson($ctx.args.version)
-                }
-              }
-            `),
-            responseMappingTemplate: MappingTemplate.fromString(`
-                $util.rds.toJsonObject($ctx.result)
-            `),
-        });
-        // GraphQL API Endpoint
+        rdsDataSource(api, cluster, this)
+        // Show the GraphQL API Endpoint in the build - e.g useful in CI/CD
         new cdk.CfnOutput(this, 'Endpoint', {
             value: api.graphqlUrl
         });
-
-        const paramGraphQLURL = new SSM.StringParameter(this, 'graphQLURL', {
+        // Save URL to param store
+        new SSM.StringParameter(this, 'graphQLURL', {
             stringValue: api.graphqlUrl,
             parameterName: 'graphQLURL',
         });
 
-        // API Key
+        // Show the API Key in the build - e.g useful in CI/CD
         new cdk.CfnOutput(this, 'API_Key', {
             value: apiKey.attrApiKey
         });
-
-        const paramApiKey = new SSM.StringParameter(this, 'apiKey', {
+        // Save API Key to param store
+        new SSM.StringParameter(this, 'apiKey', {
             stringValue: apiKey.attrApiKey,
             parameterName: 'apiKey',
         });
