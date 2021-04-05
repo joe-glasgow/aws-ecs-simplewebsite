@@ -10,6 +10,10 @@ import {IHostedZone} from "@aws-cdk/aws-route53";
 import {ICertificate} from "@aws-cdk/aws-certificatemanager";
 import {ICluster, ContainerImage} from "@aws-cdk/aws-ecs";
 
+interface ContainerSecrets {
+    [key: string]: string
+}
+
 interface ApplicationLoadBalancedServiceProps {
     stack: Construct,
     cluster: ICluster,
@@ -17,6 +21,7 @@ interface ApplicationLoadBalancedServiceProps {
     domainName: string,
     certificate: ICertificate,
     imagePath: string,
+    envSecrets: ContainerSecrets
 }
 
 const applicationLoadBalancedService = (
@@ -27,6 +32,7 @@ const applicationLoadBalancedService = (
         domainName,
         certificate,
         imagePath,
+        envSecrets,
     }: ApplicationLoadBalancedServiceProps) => new ApplicationLoadBalancedFargateService(
     stack, "WebappFargateService", {
         cluster, // Required
@@ -37,6 +43,7 @@ const applicationLoadBalancedService = (
             containerPort: 3000,
             image: ContainerImage.fromAsset(imagePath),
             enableLogging: true,
+            environment: envSecrets
         },
         memoryLimitMiB: 1024, // Default is 512
         domainZone,

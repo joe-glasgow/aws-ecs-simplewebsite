@@ -31,7 +31,11 @@ export class WebappStack extends cdk.Stack {
             containerInsights: true,
         });
         // Path to application directory with Dockerfile
-        const imagePath = path.resolve(__dirname, '../simple')
+        const imagePath = path.resolve(__dirname, '../../simple')
+        const envSecrets = {
+            AWS_ACCESS_KEY_ID: this.node.tryGetContext('aws-access-key'),
+            AWS_SECRET_ACCESS_KEY: this.node.tryGetContext('aws-secret-access-key')
+        }
 
         const appService = applicationLoadBalancedService({
             stack: this,
@@ -39,7 +43,8 @@ export class WebappStack extends cdk.Stack {
             domainZone,
             domainName,
             certificate,
-            imagePath
+            imagePath,
+            envSecrets
         })
         // Redirects HTTP to HTTPS as default if no configuration provided - ideal!
         appService.loadBalancer.addRedirect()

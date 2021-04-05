@@ -1,7 +1,7 @@
-import * as wafv2 from '@aws-cdk/aws-wafv2';
+import {CfnWebACL} from '@aws-cdk/aws-wafv2';
 import { Construct } from '@aws-cdk/core';
 
-const WebAppWaf = (stack: Construct) => new wafv2.CfnWebACL(stack, 'waf', {
+const WebAppWaf = (stack: Construct) => new CfnWebACL(stack, 'waf', {
     description: 'ACL for WebApp',
     scope: 'REGIONAL',
     defaultAction: { allow: {} },
