@@ -1,6 +1,5 @@
 import {GraphqlApi, MappingTemplate} from "@aws-cdk/aws-appsync";
-import {ServerlessCluster} from "@aws-cdk/aws-rds";
-import { DatabaseSecret } from "@aws-cdk/aws-rds";
+import {ServerlessCluster, DatabaseSecret} from "@aws-cdk/aws-rds";
 import {Construct} from "@aws-cdk/core";
 
 const rdsDataSource = (api: GraphqlApi, cluster: ServerlessCluster, stack: Construct) => {

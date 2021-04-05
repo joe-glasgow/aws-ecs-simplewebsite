@@ -1,8 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import * as rds from '@aws-cdk/aws-rds'
 import {join} from 'path'
-import * as appsync from '@aws-cdk/aws-appsync';
-import {CfnApiKey} from '@aws-cdk/aws-appsync';
+import {CfnApiKey, GraphqlApi, Schema}from '@aws-cdk/aws-appsync';
 import * as SSM from "@aws-cdk/aws-ssm";
 import auroraVPC from "./vpc/vpc";
 import httpDataSource from "./httpDataSource/dataSource";
@@ -12,9 +11,9 @@ export class GraphQLStack extends cdk.Stack {
     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
         super(scope, id, props);
 
-        const api = new appsync.GraphqlApi(this, 'Api', {
+        const api = new GraphqlApi(this, 'Api', {
             name: 'demo',
-            schema: appsync.Schema.fromAsset(join(__dirname, 'schema.gql')),
+            schema: Schema.fromAsset(join(__dirname, 'schema.gql')),
             xrayEnabled: true,
             // TODO: SHOULD ENABLE THIS IN A PRODUCTION CONTEXT
             // authorizationConfig: {
